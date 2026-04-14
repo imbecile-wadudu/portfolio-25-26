@@ -1,0 +1,71 @@
+.works-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+}
+
+.work-card {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    border: 1px solid #eee;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.work-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+}
+
+.work-type {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-grey);
+    margin-bottom: 20px;
+}
+
+.work-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 15px;
+}
+
+.work-description {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-grey);
+    margin-bottom: 30px;
+    flex-grow: 1;
+}
+
+.work-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dark);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.work-link::after {
+    content: '→';
+    transition: transform 0.3s;
+}
+
+.work-link:hover::after {
+    transform: translateX(5px);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
