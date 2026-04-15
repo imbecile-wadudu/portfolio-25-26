@@ -1,10 +1,12 @@
-let noiseScale = window.innerWidth > 768 ? 0.002 : 0.1; // Adjust noise scale based on device width
+let isMobile = window.innerWidth <= 768;
+let noiseScale = isMobile ? 0.008 : 0.002; 
 let particles = [];
-const numParticles = 5000; // Increased particle count for better coverage
-let timeOffset = 0; // Time offset for continuous flow
-let startTime = 0; // Track animation start time
-let fadeOutStarted = false; // Track fade state
-let opacity = 255; // Global opacity for fade effect
+let numParticles = isMobile ? 2000 : 5000; 
+let timeOffset = 0;
+let startTime = 0;
+let fadeOutStarted = false;
+let opacity = 255;
+let lastWidth, lastHeight;
 
 function setup() {
   let canvas = createCanvas(windowWidth, windowHeight);
@@ -13,90 +15,81 @@ function setup() {
   canvas.style('left', '0');
   canvas.style('z-index', '-1');
   
-  background(20); // Dark background
+  lastWidth = windowWidth;
+  lastHeight = windowHeight;
+
+  background(isMobile ? 10 : 20); 
   noStroke();
-  startTime = millis(); // Initialize start time
-  opacity = 255; // Reset opacity
+  startTime = millis();
+  opacity = 255;
   fadeOutStarted = false;
 
-  // Initialize particles
   for (let i = 0; i < numParticles; i++) {
     particles[i] = createVector(random(width), random(height));
   }
 }
 
 function draw() {
-  background(20, 8); // Reduced fade for more persistence
+  // Desktop: Original alpha (8), Mobile: Faster fade (22) for less brightness buildup
+  background(isMobile ? 10 : 20, isMobile ? 22 : 8); 
 
-  // Check if 10 seconds have passed
   let currentTime = millis();
   if (currentTime - startTime >= 10000 && !fadeOutStarted) {
     fadeOutStarted = true;
   }
 
-  // Handle fade out
   if (fadeOutStarted) {
-    opacity = max(0, opacity - 5); // Gradually reduce opacity
+    opacity = max(0, opacity - 5);
     if (opacity <= 0) {
-      // Reset animation
       startTime = currentTime;
       opacity = 255;
       fadeOutStarted = false;
-      background(20); // Clear background
-      // Randomize particle positions
+      background(isMobile ? 10 : 20);
       for (let i = 0; i < numParticles; i++) {
         particles[i] = createVector(random(width), random(height));
       }
     }
   }
 
-  timeOffset += 0.001; // Increment time offset for continuous flow
+  timeOffset += 0.001;
 
   for (let i = 0; i < numParticles; i++) {
     let p = particles[i];
-    
-    // Calculate noise value with time offset for endless flow
     let noiseValue = noise(p.x * noiseScale, p.y * noiseScale, timeOffset);
-    let angle = map(noiseValue, 0, 1, 0, TWO_PI * 2); // Increased angle range
+    let angle = map(noiseValue, 0, 1, 0, TWO_PI * 2);
     
-    // Update particle movement with varying speed
     let v = p5.Vector.fromAngle(angle);
-    let speed = map(noiseValue, 0, 1, 0.8, 2.0); // Variable speed
+    let speed = map(noiseValue, 0, 1, isMobile ? 0.5 : 0.8, isMobile ? 1.5 : 2.0); // Slower for mobile
     v.mult(speed);
     p.add(v);
     
-    // Draw particle with enhanced opacity
-    let alpha = map(noiseValue, 0, 1, 30, 100) * (opacity / 255);
-    fill(220, alpha); // Light gray with fade-out effect
-    let size = map(noiseValue, 0, 1, 1, 2); // Variable size
+    // Desktop & Mobile: Unified subtle alpha (30-100)
+    let alpha = map(noiseValue, 0, 1, 30, 100);
+    alpha *= (opacity / 255);
+    
+    fill(isMobile ? 230 : 220, alpha); 
+    
+    // Desktop: Original size (1-2), Mobile: Larger size (1.5-3.5)
+    let size = isMobile ? map(noiseValue, 0, 1, 1.5, 3.5) : map(noiseValue, 0, 1, 1, 2);
     ellipse(p.x, p.y, size, size);
     
-    // Smooth wrapping with position redistribution
-    if (p.x > width) {
-      p.x = 0;
-      p.y = random(height);
-    }
-    if (p.x < 0) {
-      p.x = width;
-      p.y = random(height);
-    }
-    if (p.y > height) {
-      p.y = 0;
-      p.x = random(width);
-    }
-    if (p.y < 0) {
-      p.y = height;
-      p.x = random(width);
-    }
+    if (p.x > width) { p.x = 0; p.y = random(height); }
+    if (p.x < 0) { p.x = width; p.y = random(height); }
+    if (p.y > height) { p.y = 0; p.x = random(width); }
+    if (p.y < 0) { p.y = height; p.x = random(width); }
   }
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
-  background(20);
-  
-  // Reset particles on resize
-  for (let i = 0; i < numParticles; i++) {
-    particles[i] = createVector(random(width), random(height));
+  if (abs(windowWidth - lastWidth) > 50 || abs(windowHeight - lastHeight) > 50) {
+    resizeCanvas(windowWidth, windowHeight);
+    lastWidth = windowWidth;
+    lastHeight = windowHeight;
+    isMobile = window.innerWidth <= 768;
+    background(isMobile ? 10 : 20);
+    
+    for (let i = 0; i < numParticles; i++) {
+      particles[i] = createVector(random(width), random(height));
+    }
   }
 }
